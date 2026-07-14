@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>每日英文單字</title>
+
+<!-- PWA 基本設定 -->
+<meta name="theme-color" content="#4F46E5">
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS PWA 專用設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="每日單字">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+<link rel="icon" href="icons/icon-512.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 頭部 -->
+<header class="app-header">
+  <h1>📖 每日英文單字</h1>
+  <p id="header-date" class="header-date"></p>
+</header>
+
+<main id="main-content">
+
+  <!-- 分頁一：今日單字 -->
+  <section id="tab-today" class="tab-panel">
+    <div id="today-summary" class="today-summary"></div>
+    <div id="today-word-list" class="word-list"></div>
+    <button id="learn-done-btn" class="primary-btn">我學完今天的 10 個字了 ✅</button>
+    <div id="learn-done-message" class="done-message" hidden>🎉 太棒了！今天的單字已經排入複習計畫囉！</div>
+  </section>
+
+  <!-- 分頁二：複習 -->
+  <section id="tab-review" class="tab-panel" hidden>
+    <div id="review-empty" class="empty-state" hidden>
+      <p>🎉 今天沒有需要複習的單字！</p>
+      <p class="empty-sub">明天再回來看看吧～</p>
+    </div>
+    <div id="review-area">
+      <div id="review-progress" class="review-progress"></div>
+      <div id="flashcard" class="flashcard">
+        <div class="flashcard-inner">
+          <div class="flashcard-front">
+            <span class="card-level" id="card-level"></span>
+            <div class="card-word" id="card-word"></div>
+            <div class="card-pos" id="card-pos"></div>
+            <p class="card-hint">點卡片翻開意思 👆</p>
+          </div>
+          <div class="flashcard-back">
+            <div class="card-zh" id="card-zh"></div>
+            <div class="card-example" id="card-example"></div>
+            <div class="card-example-zh" id="card-example-zh"></div>
+          </div>
+        </div>
+      </div>
+      <div id="review-buttons" class="review-buttons" hidden>
+        <button id="btn-forget" class="review-btn forget-btn">😵 忘記了</button>
+        <button id="btn-remember" class="review-btn remember-btn">✅ 我記得</button>
+      </div>
+    </div>
+    <div id="review-finished" class="empty-state" hidden>
+      <p>🏁 今天的複習全部完成！</p>
+      <p class="empty-sub">明天再回來繼續加油吧～</p>
+    </div>
+  </section>
+
+  <!-- 分頁三：進度 -->
+  <section id="tab-progress" class="tab-panel" hidden>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-streak">0</div>
+        <div class="stat-label">🔥 連續學習天數</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-reviewing">0</div>
+        <div class="stat-label">📚 複習中的字</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-mastered">0</div>
+        <div class="stat-label">🏆 已精通</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-days">0</div>
+        <div class="stat-label">📅 完成天數</div>
+      </div>
+    </div>
+
+    <div id="ios-install-guide" class="ios-guide" hidden>
+      <h3>📲 把 App 加到主畫面</h3>
+      <ol>
+        <li>用 <strong>Safari</strong> 開啟這個網站（不是其他瀏覽器喔）</li>
+        <li>點畫面下方（或上方網址列旁）的「<strong>分享</strong>」圖示 <span class="share-icon">⬆️</span></li>
+        <li>往下滑，選擇「<strong>加入主畫面</strong>」</li>
+        <li>點右上角「<strong>新增</strong>」就完成了！</li>
+      </ol>
+    </div>
+
+    <div id="line-guide" class="line-guide" hidden>
+      <h3>💬 你正在用 LINE 開啟這個 App</h3>
+      <p>把這個聊天訊息或連結釘選、加到「Keep」，下次就能快速從 LINE 打開繼續學習！</p>
+    </div>
+
+    <h3 class="section-title">我學過的單字</h3>
+    <div id="learned-list" class="learned-list"></div>
+  </section>
+
+</main>
+
+<!-- 底部導覽列 -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-tab="today">
+    <span class="nav-icon">📖</span>
+    <span class="nav-text">今日單字</span>
+  </button>
+  <button class="nav-btn" data-tab="review">
+    <span class="nav-icon-wrap">
+      <span class="nav-icon">🔄</span>
+      <span id="review-badge" class="badge" hidden>0</span>
+    </span>
+    <span class="nav-text">複習</span>
+  </button>
+  <button class="nav-btn" data-tab="progress">
+    <span class="nav-icon">📊</span>
+    <span class="nav-text">進度</span>
+  </button>
+</nav>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="words.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

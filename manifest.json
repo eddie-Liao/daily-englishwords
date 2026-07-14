@@ -1,0 +1,26 @@
+{
+  "name": "每日英文單字",
+  "short_name": "每日單字",
+  "description": "每天 10 個生活英文單字，搭配間隔重複複習，累積你的單字庫。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F6FA",
+  "theme_color": "#4F46E5",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
