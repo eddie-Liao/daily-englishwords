@@ -96,7 +96,7 @@ button {
 
 .word-card-top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -130,11 +130,19 @@ button {
   color: var(--text-main);
 }
 
+.w-example-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .word-card .w-example {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-main);
-  margin-bottom: 4px;
+  margin-bottom: 0;
+  flex: 1;
 }
 
 .word-card .w-example strong {
@@ -157,6 +165,57 @@ button {
   background: #ECFEFF;
   padding: 3px 9px;
   border-radius: 999px;
+}
+
+/* ===== 發音按鈕 ===== */
+.speak-btn {
+  flex: none;
+  border: none;
+  background: #EEF2FF;
+  color: var(--grad-start);
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+
+.speak-btn:active {
+  transform: scale(0.9);
+}
+
+.speak-btn-sm {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+
+.speak-btn-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  margin: 12px auto 0;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+@keyframes speak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.speak-btn.speaking {
+  animation: speak-pulse 0.9s ease-in-out infinite;
+  background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+  color: #fff;
+}
+
+.flashcard-front .speak-btn.speaking {
+  background: #fff;
+  color: var(--grad-start);
 }
 
 .primary-btn {
@@ -291,11 +350,20 @@ button {
   color: var(--text-main);
 }
 
+.card-example-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
 .card-example {
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-main);
   margin-bottom: 8px;
+  flex: 1;
+  text-align: left;
 }
 
 .card-example strong {

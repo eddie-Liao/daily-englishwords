@@ -218,16 +218,47 @@
     return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   }
 
-  function wordCardHTML(w) {
+  function stripBold(text) {
+    return text.replace(/\*\*/g, "");
+  }
+
+  // ===================== 語音朗讀（瀏覽器內建，不用連網API） =====================
+  let currentSpeakingBtn = null;
+
+  function speak(text, btn) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    if (currentSpeakingBtn) currentSpeakingBtn.classList.remove("speaking");
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    currentSpeakingBtn = btn || null;
+    if (btn) btn.classList.add("speaking");
+
+    const stopGlow = () => {
+      if (btn) btn.classList.remove("speaking");
+      if (currentSpeakingBtn === btn) currentSpeakingBtn = null;
+    };
+    utter.onend = stopGlow;
+    utter.onerror = stopGlow;
+
+    window.speechSynthesis.speak(utter);
+  }
+
+  function wordCardHTML(w, idx) {
     return `
       <div class="word-card">
         <div class="word-card-top">
           <span class="w-word">${w.word}</span>
+          <button type="button" class="speak-btn speak-btn-sm" data-idx="${idx}" data-type="word" aria-label="唸出單字">🔊</button>
           <span class="w-pos">${w.pos}</span>
           <span class="w-level">${w.level}</span>
         </div>
         <div class="w-zh">${w.zh}</div>
-        <div class="w-example">${renderExample(w.example)}</div>
+        <div class="w-example-row">
+          <div class="w-example">${renderExample(w.example)}</div>
+          <button type="button" class="speak-btn speak-btn-sm" data-idx="${idx}" data-type="example" aria-label="唸出例句">🔊</button>
+        </div>
         <div class="w-example-zh">${w.exampleZh}</div>
         <span class="w-tag">${w.tag}</span>
       </div>
@@ -244,7 +275,7 @@
     const btn = document.getElementById("learn-done-btn");
     const doneMsg = document.getElementById("learn-done-message");
 
-    listEl.innerHTML = cachedTodayWords.map(wordCardHTML).join("");
+    listEl.innerHTML = cachedTodayWords.map((w, idx) => wordCardHTML(w, idx)).join("");
     summaryEl.textContent = `今天總共有 ${cachedTodayWords.length} 個新單字，一起來學習吧！`;
 
     if (isTodayLearned()) {
@@ -257,6 +288,18 @@
       doneMsg.hidden = true;
     }
   }
+
+  document.getElementById("today-word-list").addEventListener("click", (e) => {
+    const speakBtn = e.target.closest(".speak-btn");
+    if (!speakBtn) return;
+    const w = cachedTodayWords[Number(speakBtn.dataset.idx)];
+    if (!w) return;
+    if (speakBtn.dataset.type === "word") {
+      speak(w.word, speakBtn);
+    } else {
+      speak(stripBold(w.example), speakBtn);
+    }
+  });
 
   document.getElementById("learn-done-btn").addEventListener("click", () => {
     if (isTodayLearned()) return;
@@ -313,6 +356,17 @@
     document.getElementById("card-zh").textContent = w.zh;
     document.getElementById("card-example").innerHTML = renderExample(w.example);
     document.getElementById("card-example-zh").textContent = w.exampleZh;
+
+    const speakFrontBtn = document.getElementById("speak-front-btn");
+    const speakBackBtn = document.getElementById("speak-back-btn");
+    speakFrontBtn.onclick = (e) => {
+      e.stopPropagation();
+      speak(w.word, speakFrontBtn);
+    };
+    speakBackBtn.onclick = (e) => {
+      e.stopPropagation();
+      speak(stripBold(w.example), speakBackBtn);
+    };
   }
 
   document.getElementById("flashcard").addEventListener("click", () => {
