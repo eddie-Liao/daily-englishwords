@@ -31,6 +31,15 @@
   <!-- 分頁一：今日單字 -->
   <section id="tab-today" class="tab-panel">
     <div id="today-summary" class="today-summary"></div>
+
+    <div id="today-story-card" class="story-card">
+      <div class="story-card-head">
+        <h3 class="story-title">📖 今日故事</h3>
+        <button type="button" class="speak-btn speak-btn-sm" id="speak-story-btn" aria-label="唸出故事">🔊</button>
+      </div>
+      <p id="today-story-text" class="story-text"></p>
+    </div>
+
     <div id="today-word-list" class="word-list"></div>
     <button id="learn-done-btn" class="primary-btn">我學完今天的 10 個字了 ✅</button>
     <div id="learn-done-message" class="done-message" hidden>🎉 太棒了！今天的單字已經排入複習計畫囉！</div>
@@ -114,6 +123,85 @@
     <div id="learned-list" class="learned-list"></div>
   </section>
 
+  <!-- 分頁四：測驗 -->
+  <section id="tab-quiz" class="tab-panel" hidden>
+
+    <div id="quiz-setup">
+      <p class="quiz-intro">從你已經學過的單字中隨機抽 10 個，選一種考法開始吧！</p>
+      <p class="quiz-learned-info">目前已學過 <span id="quiz-learned-count">0</span> 個單字</p>
+      <div id="quiz-warning" class="quiz-warning" hidden></div>
+
+      <button type="button" class="quiz-type-btn" data-type="zh2en">
+        <span class="quiz-type-emoji">🀄➜🔤</span>
+        <span class="quiz-type-label">看中文選英文</span>
+      </button>
+      <button type="button" class="quiz-type-btn" data-type="en2zh">
+        <span class="quiz-type-emoji">🔤➜🀄</span>
+        <span class="quiz-type-label">看英文選中文</span>
+      </button>
+      <button type="button" class="quiz-type-btn" data-type="spell">
+        <span class="quiz-type-emoji">⌨️</span>
+        <span class="quiz-type-label">看中文拼英文</span>
+      </button>
+      <p class="quiz-spell-note">（拼字測驗不會出現片語）</p>
+
+      <button type="button" class="quiz-type-btn" data-type="cloze">
+        <span class="quiz-type-emoji">📄</span>
+        <span class="quiz-type-label">今日故事填空</span>
+      </button>
+      <p class="quiz-spell-note">（用今天的故事，把 10 個單字挖空讓你選）</p>
+
+      <div class="quiz-mistake-section">
+        <h3 class="quiz-mistake-title">📕 答錯過的單字（<span id="quiz-mistake-count">0</span>）</h3>
+        <div id="quiz-mistake-list" class="quiz-mistake-list"></div>
+        <p id="quiz-mistake-empty" class="quiz-mistake-empty" hidden>🎉 目前沒有答錯的單字，繼續保持！</p>
+        <button type="button" id="quiz-mistake-btn" class="secondary-btn quiz-mistake-btn">複習錯題</button>
+      </div>
+    </div>
+
+    <div id="quiz-play" hidden>
+      <div class="quiz-top-row">
+        <div id="quiz-progress" class="quiz-progress"></div>
+        <button type="button" id="quiz-exit-btn" class="quiz-exit-btn">✕ 結束測驗</button>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-question" id="quiz-question"></div>
+      </div>
+
+      <div id="quiz-choices" class="quiz-choices"></div>
+
+      <div id="quiz-spell-area" class="quiz-spell-area" hidden>
+        <input type="text" id="quiz-spell-input" class="quiz-spell-input" placeholder="請輸入英文單字" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button type="button" id="quiz-spell-submit" class="primary-btn">確認答案</button>
+      </div>
+
+      <div id="quiz-feedback" class="quiz-feedback" hidden></div>
+    </div>
+
+    <div id="quiz-cloze-play" hidden>
+      <div class="quiz-top-row">
+        <div id="cloze-progress" class="quiz-progress"></div>
+        <button type="button" id="quiz-cloze-exit-btn" class="quiz-exit-btn">✕ 結束填空</button>
+      </div>
+
+      <div class="cloze-card">
+        <p id="cloze-text" class="cloze-text"></p>
+      </div>
+
+      <p id="cloze-result" class="quiz-result-text" hidden></p>
+      <button type="button" id="cloze-finish-btn" class="secondary-btn" hidden>返回選擇測驗</button>
+    </div>
+
+    <div id="quiz-result" hidden>
+      <div class="quiz-result-emoji">🎉</div>
+      <p id="quiz-result-text" class="quiz-result-text"></p>
+      <button type="button" id="quiz-retry-btn" class="primary-btn">🔁 再測一次</button>
+      <button type="button" id="quiz-back-btn" class="secondary-btn">返回選擇測驗</button>
+    </div>
+
+  </section>
+
 </main>
 
 <!-- 底部導覽列 -->
@@ -133,10 +221,15 @@
     <span class="nav-icon">📊</span>
     <span class="nav-text">進度</span>
   </button>
+  <button class="nav-btn" data-tab="quiz">
+    <span class="nav-icon">📝</span>
+    <span class="nav-text">測驗</span>
+  </button>
 </nav>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="words.js"></script>
+<script src="stories.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
