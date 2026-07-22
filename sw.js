@@ -6,7 +6,7 @@
   這樣手機才會知道要重新下載新的檔案。
 */
 
-const CACHE_NAME = "daily-english-words-v6";
+const CACHE_NAME = "daily-english-words-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const APP_SHELL = [
   "./app.js",
   "./words.js",
   "./stories.js",
+  "./stories_en.js",
   "./manifest.json",
   "./icons/icon-180.png",
   "./icons/icon-512.png",

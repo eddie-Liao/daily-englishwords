@@ -17,9 +17,13 @@
   const CHUNK_SIZE = 10;               // 每天顯示幾個字
   const REF_DATE = new Date(2024, 0, 1); // 排程用的固定參考日（隨便選一天當起點）
 
-  // 單字循環洗牌用的固定種子：每 32 天（320 字 ÷ 10）為一輪，永遠重複同一個順序。
-  // 這樣每一天（day-in-cycle 0~31）看到的 10 個字組合是固定的，才能搭配 stories.js 裡寫好的每日故事。
+  // 單字循環洗牌用的固定種子：每一輪（總字數 ÷ 10 天）永遠重複同一個順序。
+  // 這樣每一天（day-in-cycle）看到的 10 個字組合是固定的，才能搭配 stories.js 裡寫好的每日故事。
   const WORD_CYCLE_SEED = 0;
+
+  // 舊字庫（第一批 320 個字）的數量。字庫擴充時，前 OLD_COUNT 筆的洗牌結果必須維持
+  // 跟原本一模一樣（Day 0~31 不能變），新字才會接在後面排到 Day 32 之後。
+  const OLD_COUNT = 320;
 
   // 如果你想讓這個 App 可以在 LINE 裡打開，去 LINE Developers 建立 LIFF App 後
   // 把拿到的 LIFF ID（長得像 1234567890-AbCdEfGh）填在這裡，其他都不用改
@@ -92,12 +96,24 @@
     return daysSinceRef % cycleLength;
   }
 
-  function getTodayWords() {
+  function getWordOrder() {
     const total = WORDS.length;
+    // 前 OLD_COUNT 個字：用原本的種子洗牌，順序跟字庫擴充前完全相同，
+    // 所以 Day 0~31 分到的單字組合、還有已經寫好的故事，都不會被打亂。
+    const oldOrder = seededShuffle([...Array(Math.min(OLD_COUNT, total)).keys()], WORD_CYCLE_SEED);
+    if (total <= OLD_COUNT) return oldOrder;
+
+    // 超過 OLD_COUNT 的新字：用另一個種子（+1）單獨洗牌，接在後面，
+    // 所以新字只會出現在 Day 32 之後，不會混進舊的 Day 0~31。
+    const newIdxs = [...Array(total - OLD_COUNT).keys()].map((i) => i + OLD_COUNT);
+    const newOrder = seededShuffle(newIdxs, WORD_CYCLE_SEED + 1);
+    return oldOrder.concat(newOrder);
+  }
+
+  function getTodayWords() {
     const dayInCycle = getDayInCycle();
 
-    // 種子固定，同一輪（32天）永遠是同樣的洗牌順序
-    const order = seededShuffle([...Array(total).keys()], WORD_CYCLE_SEED);
+    const order = getWordOrder();
     const start = dayInCycle * CHUNK_SIZE;
     const indices = order.slice(start, start + CHUNK_SIZE);
     return indices.map((i) => WORDS[i]);
@@ -579,6 +595,7 @@
     document.getElementById("quiz-setup").hidden = false;
     document.getElementById("quiz-play").hidden = true;
     document.getElementById("quiz-cloze-play").hidden = true;
+    document.getElementById("quiz-cloze-en-play").hidden = true;
     document.getElementById("quiz-result").hidden = true;
 
     const learnedCount = getLearnedWords(false).length;
@@ -597,6 +614,11 @@
       if (btn.dataset.type === "cloze") {
         const hasStory = typeof STORIES !== "undefined" && !!STORIES[getDayInCycle()];
         btn.disabled = !hasStory;
+        return;
+      }
+      if (btn.dataset.type === "cloze-en") {
+        const hasStoryEn = typeof STORIES_EN !== "undefined" && !!STORIES_EN[getDayInCycle()];
+        btn.disabled = !hasStoryEn;
         return;
       }
       const needed = btn.dataset.type === "spell" ? singleWordCount : learnedCount;
@@ -618,6 +640,8 @@
       if (btn.disabled) return;
       if (btn.dataset.type === "cloze") {
         startClozeQuiz();
+      } else if (btn.dataset.type === "cloze-en") {
+        startClozeQuizEn();
       } else {
         startQuiz(btn.dataset.type);
       }
@@ -901,6 +925,121 @@
 
   document.getElementById("quiz-cloze-exit-btn").addEventListener("click", renderQuizSetup);
   document.getElementById("cloze-finish-btn").addEventListener("click", renderQuizSetup);
+
+  // ===================== 測驗：今日故事填空（英文版） =====================
+  let clozeEnTotal = 0;
+  let clozeEnAnswered = 0;
+  let clozeEnCorrect = 0;
+
+  function startClozeQuizEn() {
+    const storyText = typeof STORIES_EN !== "undefined" ? STORIES_EN[getDayInCycle()] : null;
+    if (!storyText) return;
+
+    document.getElementById("quiz-setup").hidden = true;
+    document.getElementById("quiz-play").hidden = true;
+    document.getElementById("quiz-result").hidden = true;
+    document.getElementById("quiz-cloze-en-play").hidden = false;
+
+    renderClozeStoryEn(storyText);
+  }
+
+  function renderClozeStoryEn(storyText) {
+    clozeEnAnswered = 0;
+    clozeEnCorrect = 0;
+    document.getElementById("cloze-en-result").hidden = true;
+    document.getElementById("cloze-en-finish-btn").hidden = true;
+
+    const containerEl = document.getElementById("cloze-en-text");
+    containerEl.innerHTML = "";
+
+    const regex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+    let blankIdx = 0;
+    const frag = document.createDocumentFragment();
+
+    while ((match = regex.exec(storyText)) !== null) {
+      if (match.index > lastIndex) {
+        frag.appendChild(document.createTextNode(storyText.slice(lastIndex, match.index)));
+      }
+      blankIdx++;
+      const word = match[1];
+      const wordObj = WORD_MAP[word];
+
+      const select = document.createElement("select");
+      select.className = "cloze-blank";
+      select.dataset.answer = word;
+
+      const placeholderOpt = document.createElement("option");
+      placeholderOpt.textContent = `---(${blankIdx})---`;
+      placeholderOpt.value = "";
+      placeholderOpt.disabled = true;
+      placeholderOpt.selected = true;
+      select.appendChild(placeholderOpt);
+
+      const distractors = wordObj ? pickDistractors(wordObj, "word", 3) : [];
+      const options = shuffleRandom([word, ...distractors.map((d) => d.word)]);
+      options.forEach((opt) => {
+        const optEl = document.createElement("option");
+        optEl.textContent = opt;
+        optEl.value = opt;
+        select.appendChild(optEl);
+      });
+
+      select.addEventListener("change", onClozeBlankChangeEn);
+
+      const hintEl = document.createElement("span");
+      hintEl.className = "cloze-answer-hint";
+
+      frag.appendChild(select);
+      frag.appendChild(hintEl);
+
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < storyText.length) {
+      frag.appendChild(document.createTextNode(storyText.slice(lastIndex)));
+    }
+
+    containerEl.appendChild(frag);
+    clozeEnTotal = blankIdx;
+    document.getElementById("cloze-en-progress").textContent = `共 ${clozeEnTotal} 格填空，選完後自動看結果`;
+  }
+
+  function onClozeBlankChangeEn(e) {
+    const select = e.target;
+    if (select.disabled) return;
+
+    const answer = select.dataset.answer;
+    const chosen = select.value;
+    const isCorrect = chosen === answer;
+
+    select.disabled = true;
+    select.classList.add(isCorrect ? "cloze-correct" : "cloze-wrong");
+
+    if (isCorrect) {
+      removeMistake(answer);
+      clozeEnCorrect++;
+    } else {
+      addMistake(answer);
+      const hintEl = select.nextSibling;
+      if (hintEl) hintEl.textContent = `（正解：${answer}）`;
+    }
+
+    clozeEnAnswered++;
+    if (clozeEnAnswered >= clozeEnTotal) {
+      finishClozeQuizEn();
+    }
+  }
+
+  function finishClozeQuizEn() {
+    const resultEl = document.getElementById("cloze-en-result");
+    resultEl.hidden = false;
+    resultEl.textContent = `🎉 全部完成！${clozeEnTotal} 格中答對了 ${clozeEnCorrect} 格。`;
+    document.getElementById("cloze-en-finish-btn").hidden = false;
+  }
+
+  document.getElementById("quiz-cloze-en-exit-btn").addEventListener("click", renderQuizSetup);
+  document.getElementById("cloze-en-finish-btn").addEventListener("click", renderQuizSetup);
 
   // ===================== 分頁切換 =====================
   const tabPanels = {

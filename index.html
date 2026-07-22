@@ -151,6 +151,12 @@
       </button>
       <p class="quiz-spell-note">（用今天的故事，把 10 個單字挖空讓你選）</p>
 
+      <button type="button" class="quiz-type-btn" data-type="cloze-en">
+        <span class="quiz-type-emoji">🇬🇧📄</span>
+        <span class="quiz-type-label">英文故事填空</span>
+      </button>
+      <p class="quiz-spell-note">（全英文短文版本，把 10 個單字挖空讓你選）</p>
+
       <div class="quiz-mistake-section">
         <h3 class="quiz-mistake-title">📕 答錯過的單字（<span id="quiz-mistake-count">0</span>）</h3>
         <div id="quiz-mistake-list" class="quiz-mistake-list"></div>
@@ -193,6 +199,20 @@
       <button type="button" id="cloze-finish-btn" class="secondary-btn" hidden>返回選擇測驗</button>
     </div>
 
+    <div id="quiz-cloze-en-play" hidden>
+      <div class="quiz-top-row">
+        <div id="cloze-en-progress" class="quiz-progress"></div>
+        <button type="button" id="quiz-cloze-en-exit-btn" class="quiz-exit-btn">✕ 結束填空</button>
+      </div>
+
+      <div class="cloze-card">
+        <p id="cloze-en-text" class="cloze-text"></p>
+      </div>
+
+      <p id="cloze-en-result" class="quiz-result-text" hidden></p>
+      <button type="button" id="cloze-en-finish-btn" class="secondary-btn" hidden>返回選擇測驗</button>
+    </div>
+
     <div id="quiz-result" hidden>
       <div class="quiz-result-emoji">🎉</div>
       <p id="quiz-result-text" class="quiz-result-text"></p>
@@ -230,6 +250,7 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="words.js"></script>
 <script src="stories.js"></script>
+<script src="stories_en.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
